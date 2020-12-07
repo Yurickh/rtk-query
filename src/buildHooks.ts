@@ -1,6 +1,6 @@
 import { AnyAction, ThunkDispatch } from '@reduxjs/toolkit';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useDispatch, useSelector, batch } from 'react-redux';
+import { useCallback, useEffect, useMemo, useRef, useState, Context } from 'react';
+import { ReactReduxContextValue, createDispatchHook, createSelectorHook, batch } from 'react-redux';
 import {
   MutationSubState,
   QueryStatus,
@@ -98,16 +98,21 @@ export type PrefetchOptions =
 
 export function buildHooks<Definitions extends EndpointDefinitions>({
   api,
+  context,
 }: {
   api: Api<any, Definitions, any, string>;
+  context: Context<ReactReduxContextValue<any, any>>;
 }) {
+  const useSelector = createSelectorHook(context);
+  const useDispatch = createDispatchHook<AnyAction, ThunkDispatch<any, any, AnyAction>>(context);
+
   return { buildQueryHook, buildMutationHook, usePrefetch };
 
   function usePrefetch<EndpointName extends QueryKeys<Definitions>>(
     endpointName: EndpointName,
     defaultOptions?: PrefetchOptions
   ) {
-    const dispatch = useDispatch<ThunkDispatch<any, any, AnyAction>>();
+    const dispatch = useDispatch();
     const stableDefaultOptions = useShallowStableValue(defaultOptions);
 
     return useCallback(
@@ -123,7 +128,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         QueryDefinition<any, any, any, any, any>,
         Definitions
       >;
-      const dispatch = useDispatch<ThunkDispatch<any, any, AnyAction>>();
+      const dispatch = useDispatch();
 
       const stableArg = useShallowStableValue(arg);
 
@@ -191,7 +196,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         MutationDefinition<any, any, any, any, any>,
         Definitions
       >;
-      const dispatch = useDispatch<ThunkDispatch<any, any, AnyAction>>();
+      const dispatch = useDispatch();
       const [requestId, setRequestId] = useState<string>();
 
       const promiseRef = useRef<MutationActionCreatorResult<any>>();

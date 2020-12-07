@@ -1,4 +1,6 @@
 import type { AnyAction, Reducer } from '@reduxjs/toolkit';
+import { Context } from 'react';
+import { ReactReduxContext, ReactReduxContextValue } from 'react-redux';
 import type { CombinedState, QueryStatePhantomType } from './apiState';
 import { Api, BaseQueryArg, BaseQueryFn } from './apiTypes';
 import { buildActionMaps } from './buildActionMaps';
@@ -38,6 +40,7 @@ export function createApi<
   endpoints,
   keepUnusedDataFor = 60,
   refetchOnMountOrArgChange = false,
+  context = ReactReduxContext,
 }: {
   baseQuery: BaseQuery;
   entityTypes?: readonly EntityTypes[];
@@ -46,6 +49,7 @@ export function createApi<
   endpoints(build: EndpointBuilder<BaseQuery, EntityTypes, ReducerPath>): Definitions;
   keepUnusedDataFor?: number;
   refetchOnMountOrArgChange?: boolean | number;
+  context?: Context<ReactReduxContextValue>;
 }): Api<BaseQuery, Definitions, ReducerPath, EntityTypes> {
   type State = CombinedState<Definitions, EntityTypes>;
 
@@ -144,7 +148,7 @@ export function createApi<
     serializeQueryArgs,
   });
 
-  const { buildQueryHook, buildMutationHook, usePrefetch } = buildHooks({ api });
+  const { buildQueryHook, buildMutationHook, usePrefetch } = buildHooks({ api, context });
 
   api.usePrefetch = usePrefetch;
 
